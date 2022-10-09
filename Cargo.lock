@@ -1124,7 +1124,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "vulkano_raymarching_compute"
+name = "vulkano_raymarching"
 version = "0.1.0"
 dependencies = [
  "bytemuck",
