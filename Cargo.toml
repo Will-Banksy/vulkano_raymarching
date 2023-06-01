@@ -11,3 +11,6 @@ vulkano-shaders = "0.31.0"
 bytemuck = "1.12.1"
 image = "0.24.4"
 minifb = "0.23.0"
+glm = "0.2.3"
+druid = { git = "https://github.com/linebender/druid.git", features = [ "im", "svg", "image" ], rev = "fc05e965c85fced8720c655685e02478e0530e94" }
+druid-widget-nursery = { git = "https://github.com/linebender/druid-widget-nursery" }

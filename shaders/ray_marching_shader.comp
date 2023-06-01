@@ -57,7 +57,7 @@ Ray create_camera_ray(vec3 cam_pos, vec3 target, float canv_dist, vec3 uv_up_wor
 	vec3 uv_right = normalize(cross(cam_dir, uv_up_world));
 	vec3 uv_down = normalize(cross(cam_dir, uv_right));
 	vec3 to_canvas = cam_dir * canv_dist;
-	vec2 canv_size = vec2(1024, 1024);//imageSize(img);
+	vec2 canv_size = imageSize(img);
 	vec2 i = (vec2(gl_GlobalInvocationID.xy) / canv_size) * 2 - 1;
 	// i -= canv_size / 2;
 	vec3 ray_pos = cam_pos + to_canvas + (uv_right * i.x) + (uv_down * i.y);
@@ -97,7 +97,7 @@ vec4 combine(float dist0, vec3 col0, float dist1, vec3 col1, uint blend_mode, fl
 			colour = col1;
 		}
 	} else if(blend_mode == BLEND_MODE_SMOOTH) {
-		vec2 min_and_mix_factor = smooth_min(dist0, dist1, blend_strength);
+		vec2 min_and_mix_factor = smooth_min(dist0, dist1, blend_strength);//vec2(mix(dist0, dist1, 0.5), 0.5);
 		dist = min_and_mix_factor.x;
 		colour = mix(col0, col1, min_and_mix_factor.y);
 	} else { // Assume BLEND_MODE_NONE
@@ -178,7 +178,7 @@ vec4 sdf_scene(vec3 origin) {
 	for(uint i = 1; i < scene.num_shapes; i++) {
 		float sdf = sdf_shape(origin, scene.shapes[i]);
 
-		vec4 comb = combine(val, colour, sdf, scene.shapes[i].albedo, BLEND_MODE_SMOOTH, 0.1);
+		vec4 comb = combine(val, colour, sdf, scene.shapes[i].albedo, BLEND_MODE_NONE, 0.1);
 		val = comb.w;
 		colour = comb.xyz;
 	}
@@ -214,7 +214,7 @@ vec3 shade(vec3 point, vec3 col) {
 // ============================
 
 // Returns colour
-vec3 march_ray() {
+vec4 march_ray() {
 	// if(scene.camera_pos != vec3(0.0, 0.0, 300.0)) {
 	// 	return vec3(1.0, 1.0, 0.0);
 	// }
@@ -260,7 +260,7 @@ vec3 march_ray() {
 
 	const vec3 outline_glow_colour = vec3(1.0, 0.0, 0.9);
 
-	return mix(overall_colour, outline_glow_colour, outline_glow_amt);
+	return vec4(mix(overall_colour, outline_glow_colour, outline_glow_amt), sdf);
 }
 
 // ============================
@@ -272,7 +272,7 @@ void main() {
 	}
 
 	vec4 colour = vec4(vec3(march_ray()), 1.0);
-	colour.xyzw = colour.zyxw;
+	colour.xyzw = colour.zyxw; // Transforming from RGBA to BGRA
 	// ff 66 00 --
 	// 00 66 ff --
 

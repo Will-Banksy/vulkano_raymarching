@@ -20,6 +20,9 @@ mod shaders {
 	}
 }
 
+pub const RESULT_IMG_WIDTH: u32 = 512;
+pub const RESULT_IMG_HEIGHT: u32 = 512;
+
 #[allow(unused)]
 const SHAPE_TYPE_NONE: u32 = 0;
 #[allow(unused)]
@@ -60,10 +63,10 @@ impl Raymarch {
 		let vk_target = VkTarget::new(vk_instance.clone(), VK_QUEUEFLAGS_COMPUTE, DeviceExtensions::default());
 
 		let data: SceneInfo = SceneInfo {
-			camera_pos: [0., 0., 700.],
+			camera_pos: [0., 0., 10.],
 			look_at: [0., 0., 0.],
-			canvas_dist: 600.,
-			num_shapes: 2,
+			canvas_dist: 10.,
+			num_shapes: 3,
 			point_light: [0., 100., 200.],
 			light_colour: [1.0, 1.0, 1.0],
 			shapes: [
@@ -110,8 +113,8 @@ impl Raymarch {
 
 		let image = StorageImage::new(vk_target.device.clone(),
 			ImageDimensions::Dim2d {
-				width: 1024,
-				height: 1024,
+				width: RESULT_IMG_WIDTH,
+				height: RESULT_IMG_HEIGHT,
 				array_layers: 1
 			},
 			Format::R8G8B8A8_UNORM,
@@ -123,7 +126,7 @@ impl Raymarch {
 			vk_target.device.clone(),
 			BufferUsage { transfer_dst: true, ..Default::default() },
 			false,
-			(0..(1024 * 1024 * 4)).map(|_| 0u8)
+			(0..(RESULT_IMG_WIDTH * RESULT_IMG_HEIGHT * 4)).map(|_| 0u8)
 		).expect("Failed to create buffer");
 
 		let debug_info: DebugInfo = DebugInfo {
@@ -181,7 +184,7 @@ impl Raymarch {
 				self.compute_pipeline.layout().clone(),
 				0, self.descriptor_set.clone()
 			)
-			.dispatch([1024 / 8, 1024 / 8, 1])
+			.dispatch([RESULT_IMG_WIDTH / 8, RESULT_IMG_HEIGHT / 8, 1])
 			.unwrap()
 			.copy_image_to_buffer(CopyImageToBufferInfo::image_buffer(
 				self.image.clone(),
